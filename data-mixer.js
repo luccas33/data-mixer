@@ -13,30 +13,6 @@ let products = [
 
 let paymentTypes = ['Cash', 'Credit Card', 'Debit Card', 'Billet'];
 
-/*
-
-"input" é o modelo a ser gerado
-
-As propriedades devem ser geradas de acordo com um objeto contendo:
-min: valor mínimo;
-max: valor máximo;
-origin: origem dos dados.
-
-min e max podem ser um number, um Date ou um Function.
-Caso min/max seja um Function, o Function é executado e o valor de retorno é usado como min/max.
-
-origin pode ser null, um array, um objeto a ser gerado (modelo) ou um Function.
-Caso origin seja null, será gerado um valor aleatório entre min e max;
-Caso origin seja um array, um valor do array será selecionado aleatoriamente;
-Caso origin seja um objeto modelo, o objeto é gerado e retornado para a propriedade em questão.
-Caso origin seja um Funcion, o Funcion é executado e seu valor de retorno é enviado para a propriedade em questão.
-
-Functions recebem o objeto que está sendo gerado como argumento.
-
-Objetos modelos filhos recebem o objeto pai na propriedade super.
-
-*/
-
 let input = {
     client: {min: 1, max: 1, origin: clients},
     seller: {min: 1, max: 1, origin: sellers},
@@ -60,6 +36,8 @@ let input = {
     payments: {
         min: (obj) => obj.paymentForms,
         max: (obj) => obj.paymentForms,
+        repeat: false,
+        idProperty: 'type',
         origin: {
             type: {origin: paymentTypes},
             value: {origin: (obj) => obj.super.total / obj.super.paymentForms}
@@ -101,8 +79,26 @@ function generateItem(origin, dest, key) {
     let qtd = random(keyval.min, keyval.max);
     qtd = qtd > 999 ? 999 : qtd;
     let values = [];
+    let repeated = 0;
     for (let i = 0; i < qtd; i++) {
-        values.push(getValue(keyval, dest));
+        let value = getValue(keyval, dest);
+        if (repeated > 999) {
+            keyval.repeat = true;
+        }
+        if (!keyval.repeat && values.indexOf(value) > -1) {
+            i--;
+            repeated++;
+            continue;
+        }
+        if (!keyval.repeat && keyval.idProperty) {
+            let ids = values.map(v => v[keyval.idProperty]);
+            if (ids.indexOf(value[keyval.idProperty]) > -1) {
+                i--;
+                repeated++;
+                continue;
+            }
+        }
+        values.push(value);
     }
     dest[key] = values;
 }
@@ -123,7 +119,7 @@ function validateMinMax(keyval, dest) {
     max = max instanceof Date ? max.getTime() : max;
     max = max < min ? min : max;
     let isDate = keyval.min instanceof Date || keyval.max instanceof Date;
-    return {min: min, max: max, origin: keyval.origin, isDate: isDate};
+    return {min, max, isDate, origin: keyval.origin, repeat: keyval.repeat, idProperty: keyval.idProperty};
 }
 
 function getValue(keyval, dest) {

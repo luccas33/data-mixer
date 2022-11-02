@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Mixer</title>
+    <script src="data-mixer.js"></script>
+</head>
+
+<body>
+    <h1>Data Mixer</h1>
+    <h3>Abra o console para ver os dados gerados</h3>
+    <h3>Tutorial</h3>
+    <p>
+        "input" é o modelo a ser gerado.
+    </p>
+    <p>
+        As propriedades devem ser geradas de acordo com um objeto contendo:<br>
+        min: valor mínimo;<br>
+        max: valor máximo;<br>
+        origin: origem dos dados;<br>
+        repeat: os valores podem se repetir;<br>
+        idProperty: nome da propriedade unica do objeto gerado.
+    </p>
+    <p>
+        min e max podem ser um number, um Date ou um Function.<br>
+        Caso min/max seja um Function, o Function é executado e o valor de retorno é usado como min/max.
+    </p>
+    <p>
+        origin pode ser null, um array, um objeto a ser gerado (modelo) ou um Function.<br>
+        Caso origin seja null, será gerado um valor aleatório entre min e max;<br>
+        Caso origin seja um array, um valor do array será selecionado aleatoriamente;<br>
+        Caso origin seja um objeto modelo, o objeto é gerado e retornado para a propriedade em questão.<br>
+        Caso origin seja um Funcion, o Funcion é executado e seu valor de retorno é enviado para a propriedade em
+        questão.
+    </p>
+    <p>
+        Functions recebem o objeto que está sendo gerado como argumento.
+    </p>
+    <p>
+        Objetos modelos filhos recebem o objeto pai na propriedade super.
+    </p>
+</body>
+
+    <script>
+        console.log('input: ', input);
+        main();
+    </script>
+
+</html>
