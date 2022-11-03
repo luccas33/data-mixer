@@ -1,0 +1,8 @@
+
+.origin-comp {
+    margin-top: 10px;
+    margin-left: 5px;
+    padding: 5px;
+    border: 1px black solid;
+    display: flex;
+}
