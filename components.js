@@ -161,7 +161,7 @@ function propertyComp(property) {
                     <label>ID Property</label>
                 </div>
                 <div class="col-2">
-                    <input id="${idRepeatProp}" value="${property.idProperty}">
+                    <input id="${idRepeatProp}" value="${property.idProperty}" onchange="bind(${property.id})">
                 </div>
                 <div class="col-1">
                     <label>Origin</label>

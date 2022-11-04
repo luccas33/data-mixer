@@ -19,7 +19,7 @@ function testForms() {
     properties.push(createProperty('client', 1, 1, true, origins[1].id));
     properties.push(createProperty('seller', 1, 1, true, origins[2].id));
     properties.push(createProperty('date', '2022/01/01', '2022/06/30'));
-    let propItens = createProperty('itens', 1, 10);
+    let propItens = createProperty('itens', 1, 5, false, null, 'product');
     properties.push(propItens);
     propItens.subproperties.push(createProperty('product', 1, 1, true, origins[0].id));
     propItens.subproperties.push(createProperty('quantity', 1, 10));
