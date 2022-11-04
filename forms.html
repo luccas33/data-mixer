@@ -17,14 +17,24 @@
     
     <div class="origins">
         <div><button onclick="addOrigin()">Add Origin</button></div>
-        <div id="origins-list" class="container"></div>
+        <div id="origins-list"></div>
     </div>
 
     <div class="properties">
         <div><button onclick="addProperty()">Add Property</button></div>
-        <div id="property-list" class="container"></div>
+        <div id="property-list"></div>
+    </div>
+
+    <div><button onclick="generateForms()">Generate</button></div>
+
+    <div class="output">
+        <textarea id="output"></textarea>
     </div>
 
 </body>
+
+<script>
+    testForms();
+</script>
 
 </html>

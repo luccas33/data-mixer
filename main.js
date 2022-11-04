@@ -3,6 +3,63 @@ let origins = [];
 let onOriginChange = [];
 let properties = [];
 
+function testForms() {
+    origins.push({id: getBindId(), type: 'text', name: 'Origin 1', value: 'a; b; c; d; d; e'});
+    origins.push({id: getBindId(), type: 'array', name: 'Origin 2', value: '[1, 2, 3, 4, 5]'});
+    origins.push({id: getBindId(), type: 'script', name: 'Origin 3', value: '(this.prop1 * this.prop3) + \' letters \' + this.prop2'});
+    
+    properties.push({
+        id: getBindId(),
+        name: 'prop1',
+        minType: 'number',
+        min: 1,
+        maxType: 'number',
+        max: 5,
+        repeat: false,
+        idProperty: '',
+        origin: ''
+    });
+    properties.push({
+        id: getBindId(),
+        name: 'prop2',
+        minType: 'number',
+        min: 1,
+        maxType: 'number',
+        max: 1,
+        repeat: true,
+        idProperty: '',
+        origin: '',
+        idOrigin: origins[0].id
+    });
+    properties.push({
+        id: getBindId(),
+        name: 'prop3',
+        minType: 'number',
+        min: 1,
+        maxType: 'number',
+        max: 1,
+        repeat: true,
+        idProperty: '',
+        origin: '',
+        idOrigin: origins[1].id
+    });
+    properties.push({
+        id: getBindId(),
+        name: 'prop4',
+        minType: 'number',
+        min: 1,
+        maxType: 'number',
+        max: 1,
+        repeat: true,
+        idProperty: '',
+        origin: '',
+        idOrigin: origins[2].id
+    });
+
+    renderOrigins();
+    renderProperties();
+}
+
 function addOrigin() {
     origins.push({id: getBindId(), type: 'text', name: '', value: ''});
     renderOrigins();
@@ -44,6 +101,12 @@ function addProperty() {
     renderProperties();
 }
 
+function removeProperty(id) {
+    let newlist = properties.filter(p => p.id !== id);
+    properties = newlist;
+    renderProperties();
+}
+
 function renderProperties() {
     let html = '';
     for (let prop of properties) {
@@ -53,25 +116,52 @@ function renderProperties() {
     fireOnOriginChange();
 }
 
-function getMinMax(idValue, type) {
-    if (!idValue || !type) {
-        return null;
+function generateForms() {
+    let model = generateModel({}, properties);
+    let data = generate(model);
+    let value = 'Generated Data:\n\n';
+    value += JSON.stringify(data, null, 4);
+    document.getElementById('output').value = value;
+}
+
+function generateModel(model, propertyList) {
+    for (let prop of propertyList) {
+        model[prop.name] = generateProperty(prop);
     }
-    let value = readInputText(idValue);
-    if (!value) {
-        return null;
+    return model;
+}
+
+function generateProperty(prop) {
+    let propval = {};
+    propval.min = getMinMax(prop.min, prop.minType);
+    propval.max = getMinMax(prop.max, prop.maxType);
+    propval.repeat = prop.repeat;
+    propval.idProperty = prop.idProperty;
+    if (prop.subproperties && Array.isArray(prop.subproperties)) {
+        propval.origin = {};
+        generateModel(propval.origin, propval.subproperties);
+        return propval;
     }
-    if (!type) {
+    propval.origin = getOriginValue(prop.idOrigin);
+    return propval;
+}
+
+function getMinMax(value, type) {
+    if (!value || !type) {
         return null;
     }
     if (type === 'number') {
+        try {
         return Number.parseInt(value);
+        } catch (e) {
+            return 1;
+        }
     }
     if (type === 'date') {
         try {
             return new Date(value.split(/[^0-9 ]/).map(str => str.trim()));
         } catch(e) {
-            return null;
+            return 1;
         }
     }
     return createOriginFunction(value);
