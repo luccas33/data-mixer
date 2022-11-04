@@ -16,6 +16,16 @@ function originComp(origin) {
     };
     addBind(origin.id, getOrigin);
 
+    origin.setData = () => {
+        writeInputText(idValue, origin.value);
+    };
+
+    let typeOptions = [
+        {value: 'text', text: 'Text ; separated'},
+        {value: 'array', text: 'JSON Array'},
+        {value: 'script', text: 'Javascript Code'}
+    ];
+
     return `
         <div class="row origin-comp">
             <div class="col-1">
@@ -29,18 +39,16 @@ function originComp(origin) {
             </div>
             <div class="col-2">
                 <select id="${idType}" onchange="bind(${origin.id})">
-                    <option value="text" ${origin.type === 'text' ? 'selected' : ''}>Text ; separated</option>
-                    <option value="array" ${origin.type === 'array' ? 'selected' : ''}>JSON Array</option>
-                    <option value="script" ${origin.type === 'script' ? 'selected' : ''}>Javascript Code</option>
+                    ${renderOptions(typeOptions, origin.type)}
                 </select>
             </div>
             <div class="col-1">
                 <label>Data</label>
             </div>
             <div class="col-4">
-                <input id="${idValue}" value="${origin.value}" onkeyup="bind(${origin.id})">
+                <input id="${idValue}" onkeyup="bind(${origin.id})">
             </div>
-            <div class="btn-remove col-1"><button onclick="removeOrigin(${origin.id})">Remove</button></div>
+            <div class="btn-remove col-1"><button type="button" class="btn btn-primary" onclick="removeOrigin(${origin.id})">Remove</button></div>
         </div>
     `;
 }
@@ -52,7 +60,7 @@ function propertyComp(property) {
 
     let idSelectOrigin = getBindId();
     let renderOriginOptions = () => {
-        let html = '<option value="">Nenhuma</option>';
+        let html = '<option value="">None</option>';
         for (let origin of origins) {
             html += `<option value="${origin.id}">${origin.name}</option>`;
         }
@@ -86,6 +94,24 @@ function propertyComp(property) {
     };
     addBind(property.id, getProperty);
 
+    let idRemove = getBindId();
+    let remove = () => {
+        removeProperty(property);
+    };
+    addBind(idRemove, remove);
+
+    let idAddSubprop = getBindId();
+    let addSubprop = () => {
+        addSubproperty(property);
+    };
+    addBind(idAddSubprop, addSubprop);
+
+    let typeOptions = [
+        {value: 'number', text: 'Number'},
+        {value: 'date', text: 'Date'},
+        {value: 'script', text: 'Javascript Code'}
+    ];
+
     return `
         <div class="row property-comp">
             <div class="col-12 row">
@@ -108,9 +134,7 @@ function propertyComp(property) {
                 </div>
                 <div class="col-2">
                     <select id="${idMinType}" onchange="bind(${property.id})">
-                        <option value="number" ${property.minType === 'number' ? 'selected' : ''}>Number</option>
-                        <option value="date" ${property.minType === 'date' ? 'selected' : ''}>Date</option>
-                        <option value="script" ${property.minType === 'script' ? 'selected' : ''}>Javascript code</option>
+                        ${renderOptions(typeOptions, property.minType)}
                     </select>
                 </div>
                 <div class="col-1">
@@ -124,9 +148,7 @@ function propertyComp(property) {
                 </div>
                 <div class="col-2">
                     <select id="${idMaxType}" onchange="bind(${property.id})">
-                        <option value="number" ${property.maxType === 'number' ? 'selected' : ''}>Number</option>
-                        <option value="date" ${property.maxType === 'date' ? 'selected' : ''}>Date</option>
-                        <option value="script" ${property.maxType === 'script' ? 'selected' : ''}>Javascript code</option>
+                        ${renderOptions(typeOptions, property.maxType)}
                     </select>
                 </div>
             </div>
@@ -149,8 +171,14 @@ function propertyComp(property) {
                     </select>
                 </div>
                 <div class="col-3">
-                    <button onclick="removeProperty(${property.id})">Remove</button>
+                    <button type="button" class="btn btn-primary" class="btn-remove" onclick="bind(${idRemove})">Remove</button>
                 </div>
+            </div>
+            <div class="col-12">
+                <button type="button" class="btn btn-primary" onclick="bind(${idAddSubprop})">Add Subproperty</button>
+            </div>
+            <div id="list_${property.id}" class="subproperties">
+
             </div>
         </div>
     `;

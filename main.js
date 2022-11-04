@@ -4,57 +4,27 @@ let onOriginChange = [];
 let properties = [];
 
 function testForms() {
-    origins.push({id: getBindId(), type: 'text', name: 'Origin 1', value: 'a; b; c; d; d; e'});
-    origins.push({id: getBindId(), type: 'array', name: 'Origin 2', value: '[1, 2, 3, 4, 5]'});
-    origins.push({id: getBindId(), type: 'script', name: 'Origin 3', value: '(this.prop1 * this.prop3) + \' letters \' + this.prop2'});
+    let totalSales = `
+        let total = 0;
+        this.itens.forEach(i => total += i.subtotal);
+        total;
+    `;
+
+    origins.push({id: getBindId(), type: 'array', name: 'Products', value: JSON.stringify(products)});
+    origins.push({id: getBindId(), type: 'array', name: 'Clients', value: JSON.stringify(clients)});
+    origins.push({id: getBindId(), type: 'array', name: 'Sellers', value: JSON.stringify(sellers)});
+    origins.push({id: getBindId(), type: 'script', name: 'Total Item', value: 'this.product.price * this.quantity'});
+    origins.push({id: getBindId(), type: 'script', name: 'Total Sale', value: totalSales});
     
-    properties.push({
-        id: getBindId(),
-        name: 'prop1',
-        minType: 'number',
-        min: 1,
-        maxType: 'number',
-        max: 5,
-        repeat: false,
-        idProperty: '',
-        origin: ''
-    });
-    properties.push({
-        id: getBindId(),
-        name: 'prop2',
-        minType: 'number',
-        min: 1,
-        maxType: 'number',
-        max: 1,
-        repeat: true,
-        idProperty: '',
-        origin: '',
-        idOrigin: origins[0].id
-    });
-    properties.push({
-        id: getBindId(),
-        name: 'prop3',
-        minType: 'number',
-        min: 1,
-        maxType: 'number',
-        max: 1,
-        repeat: true,
-        idProperty: '',
-        origin: '',
-        idOrigin: origins[1].id
-    });
-    properties.push({
-        id: getBindId(),
-        name: 'prop4',
-        minType: 'number',
-        min: 1,
-        maxType: 'number',
-        max: 1,
-        repeat: true,
-        idProperty: '',
-        origin: '',
-        idOrigin: origins[2].id
-    });
+    properties.push(createProperty('client', 1, 1, true, origins[1].id));
+    properties.push(createProperty('seller', 1, 1, true, origins[2].id));
+    properties.push(createProperty('date', '2022/01/01', '2022/06/30'));
+    let propItens = createProperty('itens', 1, 10);
+    properties.push(propItens);
+    propItens.subproperties.push(createProperty('product', 1, 1, true, origins[0].id));
+    propItens.subproperties.push(createProperty('quantity', 1, 10));
+    propItens.subproperties.push(createProperty('subtotal', 1, 1, true, origins[3].id));
+    properties.push(createProperty('total', 1, 1, true, origins[4].id));
 
     renderOrigins();
     renderProperties();
@@ -77,6 +47,11 @@ function renderOrigins() {
         html += originComp(origin);
     }
     document.getElementById('origins-list').innerHTML = html;
+    for (let origin of origins) {
+        if (origin.setData) {
+            origin.setData();
+        }
+    }
     fireOnOriginChange();
 }
 
@@ -86,8 +61,40 @@ function fireOnOriginChange() {
     }
 }
 
-function addProperty() {
-    properties.push({
+function createProperty(name, min, max, repeat = true, idOrigin = null, idProperty = '') {
+    let prop = newProperty();
+    prop.name = name;
+    prop.min = min;
+    prop.minType = parseMinMaxType(min);
+    prop.max = max;
+    prop.maxType = parseMinMaxType(max);
+    prop.repeat = repeat;
+    prop.idOrigin = idOrigin;
+    prop.idProperty = idProperty;
+    return prop;
+}
+
+function parseMinMaxType(mm) {
+    if (!mm) {
+        return 'number';
+    }
+    try {
+        mm.split(/[-/]/).length > 1;
+        return 'date';
+    } catch (e) {
+    }
+    try {
+        let isnumber = Number.parseInt(mm);
+        if (isnumber && isnumber !== NaN) {
+            return 'number';
+        }
+    } catch (e) {
+    }
+    return 'script';
+}
+
+function newProperty() {
+    return {
         id: getBindId(),
         name: '',
         minType: 'number',
@@ -96,13 +103,25 @@ function addProperty() {
         max: 1,
         repeat: true,
         idProperty: '',
-        origin: ''
-    });
+        origin: '',
+        subproperties: []
+    };
+}
+
+function addProperty() {
+    properties.push(newProperty());
     renderProperties();
 }
 
-function removeProperty(id) {
-    let newlist = properties.filter(p => p.id !== id);
+function removeProperty(property) {
+    if (!property) {
+        return;
+    }
+    if (property.super) {
+        removeSubproperty(property.super, property.id);
+        return;
+    }
+    let newlist = properties.filter(p => p.id !== property.id);
     properties = newlist;
     renderProperties();
 }
@@ -113,6 +132,9 @@ function renderProperties() {
         html += propertyComp(prop);
     }
     document.getElementById('property-list').innerHTML = html;
+    for (let prop of properties) {
+        renderSubproperties(prop);
+    }
     fireOnOriginChange();
 }
 
@@ -137,9 +159,9 @@ function generateProperty(prop) {
     propval.max = getMinMax(prop.max, prop.maxType);
     propval.repeat = prop.repeat;
     propval.idProperty = prop.idProperty;
-    if (prop.subproperties && Array.isArray(prop.subproperties)) {
+    if (prop.subproperties && Array.isArray(prop.subproperties) && prop.subproperties.length > 0) {
         propval.origin = {};
-        generateModel(propval.origin, propval.subproperties);
+        generateModel(propval.origin, prop.subproperties);
         return propval;
     }
     propval.origin = getOriginValue(prop.idOrigin);
@@ -159,7 +181,7 @@ function getMinMax(value, type) {
     }
     if (type === 'date') {
         try {
-            return new Date(value.split(/[^0-9 ]/).map(str => str.trim()));
+            return getDateStr(value);
         } catch(e) {
             return 1;
         }
@@ -167,11 +189,15 @@ function getMinMax(value, type) {
     return createOriginFunction(value);
 }
 
+function getDateStr(value) {
+    return new Date(value.split(/[^0-9 ]/).map(str => str.trim()));
+}
+
 function getOriginValue(id) {
     if (!id) {
         return null;
     }
-    let origin = origins.find(o => o.id === id);
+    let origin = origins.find(o => o.id == id);
     if (!origin || !origin.value) {
         return null;
     }
@@ -185,6 +211,58 @@ function getOriginValue(id) {
         return createOriginFunction(origin.value);
     }
     return null;
+}
+
+function addSubproperty(property) {
+    console.log('addSubproperty: ', property);
+    if (!property) {
+        return;
+    }
+    if (property.subproperties === undefined || property.subproperties === null) {
+        console.log('Resetando subproperties');
+        property.subproperties = [];
+    }
+    let subprop = newProperty();
+    subprop.super = property;
+    property.subproperties.push(subprop);
+    console.log('added subproperty: ', property);
+    renderSubproperties(property);
+}
+
+function removeSubproperty(property, idsub) {
+    if (!property || !idsub) {
+        return;
+    }
+    let newlist = property.subproperties.filter(sp => sp.id !== idsub);
+    property.subproperties = newlist;
+    renderSubproperties(property);
+}
+
+function renderSubproperties(property) {
+    if (!property || !property.subproperties) {
+        return;
+    }
+    let html = '';
+    for (let subprop of property.subproperties) {
+        html += propertyComp(subprop);
+    }
+    document.getElementById('list_' + property.id).innerHTML = html;
+    fireOnOriginChange();
+}
+
+function renderOptions(options, selected) {
+    if (!options || !Array.isArray(options)) {
+        return '';
+    }
+    selected = selected ? selected : '';
+    let html = '';
+    for (let opt of options) {
+        if (!opt || !opt.value || !opt.text) {
+            continue;
+        }
+        html += `<option value="${opt.value}" ${opt.value === selected ? 'selected' : ''}>${opt.text}</option>`;
+    }
+    return html;
 }
 
 function createOriginFunction(script) {
@@ -232,9 +310,9 @@ function writeSelect(id, value) {
         return;
     }
     for (let i = 0; i < iptSelect.options.length; i++) {
-        if (value === iptSelect[i].value) {
+        if (value == iptSelect.options[i].value) {
             iptSelect.selectedIndex = i;
-            break;
+            return;
         }
     }
 }
@@ -248,6 +326,17 @@ function readInputText(id) {
         return '';
     }
     return iptTxt.value;
+}
+
+function writeInputText(id, value) {
+    if (!id) {
+        return;
+    }
+    let iptTxt = document.getElementById(id);
+    if (!iptTxt) {
+        return;
+    }
+    iptTxt.value = value;
 }
 
 let binds = [];
