@@ -45,10 +45,13 @@ let input = {
     }
 }
 
+let generatedData = [];
 function main() {
+    generatedData = [];
     for (let i = 0; i < 10; i++) {
-        console.log(generate(input));
+        generatedData.push(generate(input));
     }
+    console.log(generatedData);
 }
 
 function generate(origin, superDest = null) {

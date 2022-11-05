@@ -43,3 +43,14 @@
     border-left: 2px gray solid;
     width: 100%;
 }
+
+.data-textarea {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 20px;
+}
+
+.data-textarea textarea {
+    width: 100%;
+    height: 100%;
+}
