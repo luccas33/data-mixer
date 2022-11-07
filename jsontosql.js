@@ -1,4 +1,19 @@
 
+let sequences = [];
+
+function nexval(name) {
+    if (!name) {
+        return null;
+    }
+    let sequence = sequences.find(seq => seq.name === name);
+    if (!sequence) {
+        sequence = {name, id: 0};
+        sequences.push(sequence);
+    }
+    sequence.id++;
+    return sequence.id;
+}
+
 function runJsonToSql() {
     let json = document.getElementById('input-json').value;
     let tableName = document.getElementById('table-name').value.trim();
@@ -37,11 +52,14 @@ function objToSql(obj, tableName = 'mytable') {
         return '';
     }
     addSubObjsAsProps(obj);
+    let idprop = 'id_' + tableName;
+    if (!obj[idprop]) {
+        obj[idprop] = nexval(idprop);
+    }
     let keys = Object.keys(obj);
     if (keys.length === 0) {
         return '';
     }
-
     let simpleKeys = [];
     let objKeys = [];
     let arrayKeys = [];
@@ -63,11 +81,14 @@ function objToSql(obj, tableName = 'mytable') {
     sql += values.map(v => getValue(v)).join(', ');
     sql += ');\n';
     for (let key of objKeys) {
-        sql += objToSql(obj[key], key);
+        let subobj = obj[key];
+        subobj[idprop] = obj[idprop];
+        sql += objToSql(subobj, key);
     }
     for (let key of arrayKeys) {
         let array = obj[key];
         for (let e of array) {
+            e[idprop] = obj[idprop];
             sql += objToSql(e, key);
         }
     }

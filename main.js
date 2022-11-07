@@ -140,8 +140,9 @@ function renderProperties() {
 
 function generateForms() {
     let model = generateModel({}, properties);
+    let amount = readInputText('data-amount') || 10;
     let data = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < amount; i++) {
         data.push(generate(model));
     }
     let value = JSON.stringify(data, null, 4);
