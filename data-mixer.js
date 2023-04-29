@@ -76,7 +76,9 @@ function generateItem(origin, dest, key) {
     }
     keyval = validateMinMax(keyval, dest);
     if (keyval.max === 1 || !keyval.origin) {
-        dest[key] = getValue(keyval, dest);
+        let value = getValue(keyval, dest);
+        value = keyval.converter ? keyval.converter(value) : value;
+        dest[key] = value;
         return;
     }
     let qtd = random(keyval.min, keyval.max);
@@ -85,6 +87,7 @@ function generateItem(origin, dest, key) {
     let repeated = 0;
     for (let i = 0; i < qtd; i++) {
         let value = getValue(keyval, dest);
+        value = keyval.converter ? keyval.converter(value) : value;
         if (repeated > 999) {
             keyval.repeat = true;
         }
@@ -122,7 +125,8 @@ function validateMinMax(keyval, dest) {
     max = max instanceof Date ? max.getTime() : max;
     max = max < min ? min : max;
     let isDate = keyval.min instanceof Date || keyval.max instanceof Date;
-    return {min, max, isDate, origin: keyval.origin, repeat: keyval.repeat, idProperty: keyval.idProperty};
+    let converter = keyval.converter && keyval.converter instanceof Function ? keyval.converter : null;
+    return {min, max, isDate, origin: keyval.origin, repeat: keyval.repeat, idProperty: keyval.idProperty, converter};
 }
 
 function getValue(keyval, dest) {
@@ -148,4 +152,34 @@ function getValue(keyval, dest) {
 function random(min, max) {
     max++;
     return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function datetimeToString(date) {
+    if (!date || !(date instanceof Date)) {
+        return null;
+    }
+    return `${dateToString(date)} ${timeToString(date)}`;
+}
+
+function dateToString(date) {
+    if (!date || !(date instanceof Date)) {
+        return null;
+    }
+    return `${date.getFullYear()}-${complete(date.getMonth() + 1)}-${complete(date.getDay())}`;
+}
+
+function timeToString(date) {
+    if (!date || !(date instanceof Date)) {
+        return null;
+    }
+    return `${complete(date.getHours())}:${complete(date.getMinutes())}:${complete(date.getSeconds())}`;
+}
+
+function complete(value, char = '0', qtt = 2) {
+    value = value + '';
+    char = char.length === 0 ? '0' : char;
+    while (value.length < qtt) {
+        value = char + value;
+    }
+    return value;
 }
