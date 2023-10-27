@@ -16,7 +16,7 @@ let paymentTypes = ['Cash', 'Credit Card', 'Debit Card', 'Billet'];
 let input = {
     client: {min: 1, max: 1, origin: clients},
     seller: {min: 1, max: 1, origin: sellers},
-    date: {min: new Date(2022, 0, 1), max: new Date(2022, 05, 31)},
+    date: {min: new Date(2022, 0, 1), max: new Date(2022, 5, 31)},
     itens: {min: 1, max: 10, 
         origin: {
             product: {min: 1, max: 1, origin: products},
@@ -26,7 +26,7 @@ let input = {
     },
     paymentDate: {
         min: (obj) => obj.date, 
-        max: new Date(2022, 06, 30)},
+        max: new Date(2022, 6, 30)},
     total: {origin: (obj) => {
         let value = 0;
         obj.itens.forEach(i => value += i.subtotal);
@@ -165,7 +165,7 @@ function dateToString(date) {
     if (!date || !(date instanceof Date)) {
         return null;
     }
-    return `${date.getFullYear()}-${complete(date.getMonth() + 1)}-${complete(date.getDay())}`;
+    return `${date.getFullYear()}-${complete(date.getMonth() + 1)}-${complete(date.getDate())}`;
 }
 
 function timeToString(date) {
