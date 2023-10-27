@@ -183,3 +183,8 @@ function complete(value, char = '0', qtt = 2) {
     }
     return value;
 }
+
+function round(value = 0, dec = 2) {
+    let factor = Math.pow(10, dec);
+    return Math.round(value * factor) / factor;
+}

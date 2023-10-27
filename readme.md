@@ -109,3 +109,9 @@ questão.
 
 - As functions de converter recebem o valor gerado no argumento e devem retornar o valor tratado.
 Functions de converter disponíveis: dateToString, timeToString, datetimeToString.
+
+### Functions Utilitárias
+
+- random(min, max): gera um valor inteiro entre min e max
+
+- round(valor, casasDecimais): arredonda um valor
