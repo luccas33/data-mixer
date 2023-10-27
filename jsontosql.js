@@ -1,6 +1,8 @@
 
 let sequences = [];
 
+let generateIDs = true;
+
 function nexval(name) {
     if (!name) {
         return null;
@@ -53,7 +55,7 @@ function objToSql(obj, tableName = 'mytable') {
     }
     addSubObjsAsProps(obj);
     let idprop = 'id_' + tableName;
-    if (!obj[idprop]) {
+    if (generateIDs && !obj[idprop]) {
         obj[idprop] = nexval(idprop);
     }
     let keys = Object.keys(obj);
@@ -82,13 +84,17 @@ function objToSql(obj, tableName = 'mytable') {
     sql += ');\n';
     for (let key of objKeys) {
         let subobj = obj[key];
-        subobj[idprop] = obj[idprop];
+        if (generateIDs) {
+            subobj[idprop] = obj[idprop];
+        }
         sql += objToSql(subobj, key);
     }
     for (let key of arrayKeys) {
         let array = obj[key];
         for (let e of array) {
-            e[idprop] = obj[idprop];
+            if (generateIDs) {
+                e[idprop] = obj[idprop];
+            }
             sql += objToSql(e, key);
         }
     }
