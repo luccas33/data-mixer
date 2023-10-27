@@ -78,7 +78,7 @@ function objToSql(obj, tableName = 'mytable') {
 
     let sql = `insert into \`${tableName}\` (${simpleKeys.map(k => '`' + k + '`').join(', ')}) values (`;
     let values = simpleKeys.map(k => obj[k]);
-    sql += values.map(v => getValue(v)).join(', ');
+    sql += values.map(v => getSQLValue(v)).join(', ');
     sql += ');\n';
     for (let key of objKeys) {
         let subobj = obj[key];
@@ -154,7 +154,7 @@ function isSimpleType(value) {
     return true;
 }
 
-function getValue(value) {
+function getSQLValue(value) {
     if (!value) {
         return 'null';
     }
